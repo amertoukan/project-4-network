@@ -1,0 +1,47 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+     {% if following %}
+        <h2>Your Followings' Posts</h2>
+    {% else %}
+        <h2>All Posts</h2>
+    {% endif %}
+    <div class="container-fluid">
+        {% if user.is_authenticated %}
+            <div class="row mb-5">
+                <div id="new_post">
+                    <h3>New Post:</h3>
+                    <form action="{% url 'new_post' %}" method="POST">
+                        {% csrf_token %}
+                        <textarea required="true" maxlength="256" rows="4" cols="75" name="content"></textarea> <br>
+                        <input type="submit" class="btn btn-primary btn-sm" value="Post">
+                </div>
+            </div>
+        {% else %}
+            <br>
+        {% endif %}
+        {% for post in posts %}
+            <div class="row mb-3">
+                <div class="col" id="post_div_{{ post.id }}">
+                    <p>{{ post.content }}</p>
+                    Posted by: <a href="{% url 'profile' post.poster.username %}"><strong>{{ post.poster.username }}</strong></a> on <strong>{{ post.created }}</strong>
+                    <p id="likes_{{ post.id }}">Likes: {{ post.likes.count }}</p>
+                    {% if user.is_authenticated %}
+                        {% if user not in post.likes.all %}
+                           
+                            <button type="button" id="like_{{ post.id }}" class="btn btn-outline-danger btn-sm" onclick = "like_post(`{{ post.id }}`)">Like</button>
+                          
+                        {% else %}
+                       
+                            <button type="button" id="unlike_{{ post.id }}" class="btn btn-outline-danger btn-sm" onclick = "unlike_post(`{{ post.id }}`)" >Unlike</button>
+                      
+                        {% endif %}
+                    {% endif %}
+                    {% if request.user == post.poster %}
+                        <button type="button" id="edit_{{ post.id }}" class="btn btn-outline-success btn-sm" onclick="edit_post(`{{ post.id }}`)">Edit</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

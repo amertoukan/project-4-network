@@ -1,0 +1,56 @@
+{% extends "network/layout.html" %}
+
+{% block title %}
+    {{ profile.username }}
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        {% if request.user == profile %}
+            <h2>Your Profile</h2>
+        {% else %}
+            <h2>{{ profile.username }}'s Profile</h2>
+            {% if user.is_authenticated %}
+                {% if is_following %}
+                    <form method="POST" action="{% url 'follow' profile.username %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">Unfollow</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{% url 'follow' profile.username %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+        <br>
+        <h4>Followers: {{ followers }}</h4>
+        <h4>Following: {{ following }}</h4>
+        <br>
+        {% if request.user == profile %}
+            <h2>Your Posts</h2>
+        {% else %}
+            <h2>{{ profile.username }}'s Posts</h2>
+        {% endif %}
+        {% for post in posts %}
+            <div class="row mb-3">
+                <div class="col" id="post_div_{{ post.id }}">
+                    <p>{{ post.content }}</p>
+                    Posted by: <a href="{% url 'profile' post.poster.username %}"><strong>{{ post.poster.username }}</strong></a> on <strong>{{ post.created }}</strong>
+                    <p id="likes">Likes: {{ post.likes.count }}</p>
+                    {% if user.is_authenticated %}
+                        {% if user not in post.likes.all %}
+                            <button type="button" id="like_{{ post.id }}" class="btn btn-outline-danger btn-sm" onclick="like_post(`{{ post.id }}`)">Like</button>
+                        {% else %}
+                            <button type="button" id="unlike_{{ post.id }}" class="btn btn-outline-danger btn-sm" onclick="unlike_post(`{{ post.id }}`)">Unlike</button>
+                        {% endif %}
+                    {% endif %}
+                    {% if request.user == post.poster %}
+                        <button type="button" id="edit_{{ post.id }}" class="btn btn-outline-primary btn-sm" onclick="edit_post(`{{ post.id }}`)">Edit</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
